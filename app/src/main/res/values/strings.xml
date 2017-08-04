@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">AndroidRealmEncryptionTest</string>
+    <string name="decrypt">Decrypt</string>
+    <string name="encrypt">Encrypt</string>
+    <string name="delete">Delete</string>
+    <string name="decrypt_result">Decrypt Result</string>
+    <string name="final_text">Final Text</string>
+    <string name="initial_text">Initial Text</string>
+    <string name="generate">Generate Key Pair</string>
+    <string name="key_alias">Text to Encrypt</string>
+</resources>

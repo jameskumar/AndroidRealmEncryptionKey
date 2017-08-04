@@ -1,0 +1,16 @@
+  KeyGenParameterSpec spec = new KeyGenParameterSpec.Builder(alias)
+                    .setKeyValidityStart(start)
+                    .setCertificateSubject(new X500Principal("CN=Sample Name, O=Android Authority"))
+                    .setCertificateSerialNumber(BigInteger.ONE)
+                    .setKeyValidityEnd(end);
+
+
+
+
+            KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(this)
+                    .setAlias(alias)
+                    .setSubject(new X500Principal("CN=Sample Name, O=Android Authority"))
+                    .setSerialNumber(BigInteger.ONE)
+                    .setStartDate(start.getTime())
+                    .setEndDate(end.getTime())
+                    .build();
