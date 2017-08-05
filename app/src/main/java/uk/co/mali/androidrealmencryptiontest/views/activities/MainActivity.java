@@ -51,26 +51,26 @@ public class MainActivity extends AppCompatActivity {
     private static final String CIPHER_TYPE = "RSA/ECB/PKCS1PADDING";
     private static final String CIPHER_PROVIDER = "AndroidOpenSSL";
 
-    @BindView(R.id.aliasText)
+  //  @BindView(R.id.aliasText)
     EditText mAliasText;
 
-    @BindView(R.id.startText)
+  //  @BindView(R.id.startText)
     EditText mStartText;
 
-    @BindView(R.id.decryptedText)
+ //   @BindView(R.id.decryptedText)
     EditText mDecryptText;
 
-    @BindView(R.id.encryptedText)
+ //   @BindView(R.id.encryptedText)
     EditText mEncryptedText;
 
-    @BindView(R.id.listView)
+  //  @BindView(R.id.listView)
     ListView mListView;
 
     private KeyRecyclerAdapter listAdapter;
 
     KeyStore keyStore;
 
-    List<String> mKeyAliases;
+    public List<String> mKeyAliases ;
 
 
     @Override
@@ -78,6 +78,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        View viewHeader = View.inflate(this, R.layout.activity_main_header, null);
+
+
+        listAdapter = new KeyRecyclerAdapter(this, R.id.keyAlias);
+        mAliasText = (EditText) viewHeader.findViewById(R.id.aliasText);
+        mStartText = (EditText) viewHeader.findViewById(R.id.startText);
+        mDecryptText = (EditText)viewHeader.findViewById(R.id.decryptedText);
+        mEncryptedText = (EditText) viewHeader.findViewById(R.id.encryptedText);
+        mListView = (ListView) findViewById(R.id.listView);
+
 
         try {
             keyStore.getInstance("AndroidKeyStore");
@@ -87,11 +97,12 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        listAdapter = new KeyRecyclerAdapter(this,R.id.keyAlias);
-        View viewHeader = View.inflate(this, R.layout.activity_main_header, null);
-
         mListView.addHeaderView(viewHeader);
-        listAdapter = new KeyRecyclerAdapter(this, R.id.keyAlias);
+        refreshKeys();
+        listAdapter = new KeyRecyclerAdapter(this,R.id.keyAlias);
+        mListView.setAdapter(listAdapter);
+
+
     }
 
 
@@ -119,28 +130,37 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void createNewKeys(View view) {
 
-        Calendar end, start = null;
+        Calendar end=null, start = null;
         String alias = mAliasText.getText().toString();
+        Log.d(TAG,"Alias Text in Create New Keys, : "+alias);
+
         try {
-            if (!keyStore.containsAlias(alias))
-                start = Calendar.getInstance();
-            end = Calendar.getInstance();
+         //   int keystoreSize = keyStore.size();
 
-            end.add(Calendar.YEAR, 1);
+                if (!keyStore.containsAlias(alias)) {
+                    start = Calendar.getInstance();
+                    end = Calendar.getInstance();
+                    end.add(Calendar.YEAR, 1);
 
-            KeyGenParameterSpec spec = new KeyGenParameterSpec.Builder(
-                    alias,
-                    KeyProperties.PURPOSE_DECRYPT | KeyProperties.PURPOSE_ENCRYPT)
-                    .setCertificateSubject(new X500Principal("CN=Sample Name, O=Android Authority"))
-                    .setKeyValidityStart(start.getTime())
-                    .setCertificateSerialNumber(BigInteger.ONE)
-                    .setKeyValidityEnd(end.getTime())
-                    .build();
+                    KeyGenParameterSpec spec = new KeyGenParameterSpec.Builder(
+                            alias,
+                            KeyProperties.PURPOSE_DECRYPT | KeyProperties.PURPOSE_ENCRYPT)
+                            .setCertificateSubject(new X500Principal("CN=Sample Name, O=Android Authority"))
+                            .setKeyValidityStart(start.getTime())
+                            .setCertificateSerialNumber(BigInteger.ONE)
+                            .setKeyValidityEnd(end.getTime())
+                            .build();
 
-            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
-            generator.initialize(spec);
+                    KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
+                    generator.initialize(spec);
 
-            KeyPair keyPair = generator.generateKeyPair();
+                    KeyPair keyPair = generator.generateKeyPair();
+
+                }
+
+
+
+
         } catch (Exception ex) {
 
             Toast.makeText(this, "Exception " + ex.getMessage() + " occured", Toast.LENGTH_LONG).show();
@@ -201,13 +221,17 @@ public class MainActivity extends AppCompatActivity {
             }
 
             Cipher inCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
-            inCipher.init(Cipher.DECRYPT_MODE, publicKey);
+            inCipher.init(Cipher.ENCRYPT_MODE, publicKey);
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             CipherOutputStream cipherOutputStream = new CipherOutputStream(outputStream,inCipher);
             cipherOutputStream.write(initialText.getBytes("UTF-8"));
+
             cipherOutputStream.close();
             byte [] vals = outputStream.toByteArray();
+
+          //  String m = Base64.encodeToString(vals,Base64.DEFAULT);
+
             mEncryptedText.setText(Base64.encodeToString(vals,Base64.DEFAULT));
 
 
@@ -258,6 +282,13 @@ public class MainActivity extends AppCompatActivity {
             super(context, textView);
         }
 
+        @BindView(R.id.encryptButton)
+        Button encryptButton;
+        @BindView(R.id.decryptButton)
+        Button decryptButton;
+        @BindView(R.id.keyAlias)
+        TextView keyAlias;
+
         @Override
         public int getCount() {
             return mKeyAliases.size();
@@ -267,17 +298,18 @@ public class MainActivity extends AppCompatActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             View itemView = LayoutInflater.from(parent.getContext()).
                     inflate(R.layout.list_item, parent, false);
+            ButterKnife.bind(this,itemView);
 
-            final TextView keyAlias = (TextView) itemView.findViewById(R.id.keyAlias);
+           // final TextView keyAlias = (TextView) itemView.findViewById(R.id.keyAlias);
             keyAlias.setText(mKeyAliases.get(position));
-            Button encryptButton = (Button) itemView.findViewById(R.id.encryptButton);
+           // Button encryptButton = (Button) itemView.findViewById(R.id.encryptButton);
             encryptButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     encryptString(keyAlias.getText().toString());
                 }
             });
-            Button decryptButton = (Button) itemView.findViewById(R.id.decryptButton);
+           // Button decryptButton = (Button) itemView.findViewById(R.id.decryptButton);
             decryptButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
