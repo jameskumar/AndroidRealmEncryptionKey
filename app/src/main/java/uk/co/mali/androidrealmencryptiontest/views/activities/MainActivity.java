@@ -76,9 +76,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        refreshKeys();
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         View viewHeader = View.inflate(this, R.layout.activity_main_header, null);
+
+
 
 
         listAdapter = new KeyRecyclerAdapter(this, R.id.keyAlias);
@@ -89,16 +99,8 @@ public class MainActivity extends AppCompatActivity {
         mListView = (ListView) findViewById(R.id.listView);
 
 
-        try {
-            keyStore.getInstance("AndroidKeyStore");
-            keyStore.load(null);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         mListView.addHeaderView(viewHeader);
-        refreshKeys();
         listAdapter = new KeyRecyclerAdapter(this,R.id.keyAlias);
         mListView.setAdapter(listAdapter);
 

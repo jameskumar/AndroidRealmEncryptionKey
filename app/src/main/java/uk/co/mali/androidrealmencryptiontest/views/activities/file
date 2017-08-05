@@ -1,0 +1,30 @@
+
+The answer from Sonic is correct in that the Java Key Store that you use to sign the app is different from the KeyStore you use in your app. The former is a file on your dev machine (your laptop) while the latter is only on the handset you install your app to (an Android phone or emulator). Signing your apk so it can be released on the Play Store and encrypting the user's private data on your data are distinct procedures.
+
+In cases where it's not clear, you should try and refer to canonical sources rather than arbitrary gists and tutorials which vary greatly in quality. In this case, the official Android documentation for KeyStore has a complete example for storing keys. Please note that the Android KeyStore referenced in the Gist is only available on API 18+.
+
+Admittedly, the code examples in the official documentation and the Gist are quite complex and it is easy to make a mistake. A better option may be to something like Scytale. It is a wrapper around the KeyStore that will correctly handle the case where API < 18. Here is a code snippet to demonstrate:
+
+Store store = new Store(getApplicationContext());
+if (!store.hasKey("test")) {
+   SecretKey key = store.generateSymmetricKey("test", null);
+}
+...
+
+// Get key
+SecretKey key = store.getSymmetricKey("test", null);
+
+// Encrypt/Decrypt data
+Crypto crypto = new Crypto(Options.TRANSFORMATION_SYMMETRIC);
+String text = "Sample text";
+
+String encryptedData = crypto.encrypt(text, key);
+Log.i("Scytale", "Encrypted data: " + encryptedData);
+
+String decryptedData = crypto.decrypt(encryptedData, key);
+Log.i("Scytale", "Decrypted data: " + decryptedData);
+Note that you will still need to create a key in order to encrypt data regardless of the state of your .jks on your host machine. The code in the sample is correct:
+
+if there is no key in the keystore with that alias
+    make a new key with that alias
+use the key to encrypt and decrypt data.
