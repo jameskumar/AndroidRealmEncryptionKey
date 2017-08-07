@@ -147,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
                     KeyGenParameterSpec spec = new KeyGenParameterSpec.Builder(
                             alias,
                             KeyProperties.PURPOSE_DECRYPT | KeyProperties.PURPOSE_ENCRYPT)
+                            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
                             .setCertificateSubject(new X500Principal("CN=Sample Name, O=Android Authority"))
                             .setKeyValidityStart(start.getTime())
                             .setCertificateSerialNumber(BigInteger.ONE)
